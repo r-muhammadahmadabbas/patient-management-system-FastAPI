@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Management System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e8ba3 100%);
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3), transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(72, 149, 239, 0.3), transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.1);
+            overflow: hidden;
+            position: relative;
+            z-index: 1;
+            backdrop-filter: blur(10px);
+        }
+
+        header {
+            background: linear-gradient(135deg, #2563eb 0%, #3b82f6 50%, #60a5fa 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: headerShine 15s linear infinite;
+        }
+
+        @keyframes headerShine {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        header h1 {
+            font-size: 2.8em;
+            margin-bottom: 8px;
+            font-weight: 700;
+            position: relative;
+            z-index: 1;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+            position: relative;
+            z-index: 1;
+            font-weight: 500;
+        }
+
+        .tabs {
+            display: flex;
+            background: linear-gradient(to bottom, #f8fafc 0%, #f1f5f9 100%);
+            border-bottom: 2px solid #e2e8f0;
+            position: relative;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 18px 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            border: none;
+            background: none;
+            font-size: 15px;
+            color: #64748b;
+            position: relative;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab:hover {
+            background: linear-gradient(to bottom, rgba(37, 99, 235, 0.05), rgba(59, 130, 246, 0.08));
+            color: #2563eb;
+            border-bottom-color: rgba(37, 99, 235, 0.3);
+        }
+
+        .tab.active {
+            background: white;
+            color: #2563eb;
+            box-shadow: 0 -2px 10px rgba(37, 99, 235, 0.1);
+            border-bottom-color: #3b82f6;
+        }
+
+        .content {
+            padding: 40px 30px;
+            background: linear-gradient(to bottom, #ffffff 0%, #f8fafc 100%);
+            min-height: 500px;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #1e293b;
+            font-size: 14px;
+            letter-spacing: 0.3px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 13px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: white;
+            color: #1e293b;
+            font-weight: 500;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1), 0 1px 3px rgba(0,0,0,0.1);
+            transform: translateY(-1px);
+        }
+
+        input::placeholder {
+            color: #94a3b8;
+        }
+
+        button {
+            background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+            color: white;
+            padding: 14px 32px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        button:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(37, 99, 235, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 10px rgba(37, 99, 235, 0.3);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .patients-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 24px;
+            margin-top: 24px;
+        }
+
+        .patient-card {
+            background: white;
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid #e2e8f0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .patient-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #2563eb, #3b82f6, #60a5fa);
+            transform: scaleX(0);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .patient-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 40px rgba(37, 99, 235, 0.15);
+        }
+
+        .patient-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .patient-card h3 {
+            color: #1e293b;
+            margin-bottom: 16px;
+            font-size: 1.4em;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .patient-info {
+            margin: 10px 0;
+            font-size: 14.5px;
+            color: #475569;
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .patient-info:last-of-type {
+            border-bottom: none;
+        }
+
+        .patient-info strong {
+            color: #334155;
+            font-weight: 600;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 700;
+            margin-top: 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            transition: all 0.3s ease;
+        }
+
+        .badge.normal {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+        }
+
+        .badge.underweight {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+        }
+
+        .badge.overweight {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+        }
+
+        .badge.obese {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+        }
+
+        .patient-actions {
+            margin-top: 20px;
+            display: flex;
+            gap: 12px;
+            padding-top: 16px;
+            border-top: 2px solid #f1f5f9;
+        }
+
+        .btn-small {
+            padding: 10px 18px;
+            font-size: 14px;
+            flex: 1;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .btn-edit {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            box-shadow: 0 3px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-edit:hover {
+            box-shadow: 0 5px 20px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-delete {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            box-shadow: 0 3px 12px rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-delete:hover {
+            box-shadow: 0 5px 20px rgba(239, 68, 68, 0.4);
+        }
+
+        .alert {
+            padding: 16px 20px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            display: none;
+            font-weight: 600;
+            animation: slideDown 0.4s ease-out;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .alert.success {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            color: #065f46;
+            border-left: 4px solid #10b981;
+        }
+
+        .alert.error {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            color: #991b1b;
+            border-left: 4px solid #ef4444;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: #3b82f6;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #e2e8f0;
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            margin-left: 10px;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: #64748b;
+        }
+
+        .empty-state h3 {
+            margin-bottom: 12px;
+            color: #475569;
+            font-size: 1.5em;
+        }
+
+        .empty-state p {
+            color: #94a3b8;
+            font-size: 1.05em;
+        }
+
+        h2 {
+            color: #1e293b;
+            margin-bottom: 24px;
+            font-size: 1.8em;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏥 Patient Management System</h1>
+            <p>Manage patient records efficiently</p>
+        </header>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('view')">View Patients</button>
+            <button class="tab" onclick="switchTab('create')">Add Patient</button>
+            <button class="tab" onclick="switchTab('edit')">Edit Patient</button>
+            <button class="tab" onclick="switchTab('sort')">Sort Patients</button>
+        </div>
+
+        <div class="content">
+            <div id="alert" class="alert"></div>
+
+            <!-- View Patients Tab -->
+            <div id="view-tab" class="tab-content active">
+                <h2>All Patients</h2>
+                <div id="patients-list" class="patients-grid"></div>
+            </div>
+
+            <!-- Create Patient Tab -->
+            <div id="create-tab" class="tab-content">
+                <h2>Add New Patient</h2>
+                <form id="create-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Patient ID *</label>
+                            <input type="text" id="create-id" required placeholder="e.g., P007">
+                        </div>
+                        <div class="form-group">
+                            <label>Name *</label>
+                            <input type="text" id="create-name" required placeholder="Full Name">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>City *</label>
+                            <input type="text" id="create-city" required placeholder="City">
+                        </div>
+                        <div class="form-group">
+                            <label>Age *</label>
+                            <input type="number" id="create-age" required min="1" max="119" placeholder="Age">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Gender *</label>
+                            <select id="create-gender" required>
+                                <option value="">Select Gender</option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                                <option value="others">Others</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Height (meters) *</label>
+                            <input type="number" id="create-height" required step="0.01" min="0.1" placeholder="e.g., 1.75">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Weight (kg) *</label>
+                            <input type="number" id="create-weight" required step="0.1" min="1" placeholder="e.g., 70">
+                        </div>
+                    </div>
+                    <button type="submit">Add Patient</button>
+                </form>
+            </div>
+
+            <!-- Edit Patient Tab -->
+            <div id="edit-tab" class="tab-content">
+                <h2>Edit Patient</h2>
+                <div class="form-group">
+                    <label>Select Patient *</label>
+                    <select id="edit-patient-select" onchange="loadPatientData()">
+                        <option value="">Choose a patient...</option>
+                    </select>
+                </div>
+                <form id="edit-form" style="display: none;">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Name</label>
+                            <input type="text" id="edit-name" placeholder="Full Name">
+                        </div>
+                        <div class="form-group">
+                            <label>City</label>
+                            <input type="text" id="edit-city" placeholder="City">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Age</label>
+                            <input type="number" id="edit-age" min="1" max="119" placeholder="Age">
+                        </div>
+                        <div class="form-group">
+                            <label>Gender</label>
+                            <select id="edit-gender">
+                                <option value="">Keep current</option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                                <option value="others">Others</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Height (meters)</label>
+                            <input type="number" id="edit-height" step="0.01" min="0.1" placeholder="e.g., 1.75">
+                        </div>
+                        <div class="form-group">
+                            <label>Weight (kg)</label>
+                            <input type="number" id="edit-weight" step="0.1" min="1" placeholder="e.g., 70">
+                        </div>
+                    </div>
+                    <button type="submit">Update Patient</button>
+                </form>
+            </div>
+
+            <!-- Sort Patients Tab -->
+            <div id="sort-tab" class="tab-content">
+                <h2>Sort Patients</h2>
+                <div class="sort-controls">
+                    <div class="form-group">
+                        <label>Sort By</label>
+                        <select id="sort-by">
+                            <option value="bmi">BMI</option>
+                            <option value="weight">Weight</option>
+                            <option value="height">Height</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Order</label>
+                        <select id="sort-order">
+                            <option value="asc">Ascending</option>
+                            <option value="desc">Descending</option>
+                        </select>
+                    </div>
+                    <button onclick="sortPatients()">Sort</button>
+                </div>
+                <div id="sorted-patients" class="patients-grid"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000';
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+            
+            if (tabName === 'view') {
+                loadPatients();
+            } else if (tabName === 'edit') {
+                loadPatientSelect();
+            }
+        }
+
+        function showAlert(message, type) {
+            const alert = document.getElementById('alert');
+            alert.textContent = message;
+            alert.className = `alert ${type}`;
+            alert.style.display = 'block';
+            setTimeout(() => {
+                alert.style.display = 'none';
+            }, 5000);
+        }
+
+        async function loadPatients() {
+            const container = document.getElementById('patients-list');
+            container.innerHTML = '<div class="loading">Loading patients...</div>';
+            
+            try {
+                const response = await fetch(`${API_URL}/view`);
+                const data = await response.json();
+                
+                if (Object.keys(data).length === 0) {
+                    container.innerHTML = '<div class="empty-state"><h3>No patients found</h3><p>Add a new patient to get started</p></div>';
+                    return;
+                }
+                
+                container.innerHTML = '';
+                for (const [id, patient] of Object.entries(data)) {
+                    container.innerHTML += createPatientCard(id, patient);
+                }
+            } catch (error) {
+                container.innerHTML = '<div class="empty-state"><h3>Error loading patients</h3><p>Make sure the API is running</p></div>';
+                showAlert('Error loading patients: ' + error.message, 'error');
+            }
+        }
+
+        function createPatientCard(id, patient) {
+            const verdictClass = patient.verdict.toLowerCase().replace(' ', '-');
+            return `
+                <div class="patient-card">
+                    <h3>${patient.name}</h3>
+                    <div class="patient-info"><strong>ID:</strong> ${id}</div>
+                    <div class="patient-info"><strong>Age:</strong> ${patient.age} years</div>
+                    <div class="patient-info"><strong>Gender:</strong> ${patient.gender}</div>
+                    <div class="patient-info"><strong>City:</strong> ${patient.city}</div>
+                    <div class="patient-info"><strong>Height:</strong> ${patient.height}m</div>
+                    <div class="patient-info"><strong>Weight:</strong> ${patient.weight}kg</div>
+                    <div class="patient-info"><strong>BMI:</strong> ${patient.bmi}</div>
+                    <span class="badge ${verdictClass}">${patient.verdict}</span>
+                    <div class="patient-actions">
+                        <button class="btn-small btn-edit" onclick="editPatient('${id}')">Edit</button>
+                        <button class="btn-small btn-delete" onclick="deletePatient('${id}')">Delete</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        document.getElementById('create-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const patientData = {
+                id: document.getElementById('create-id').value,
+                name: document.getElementById('create-name').value,
+                city: document.getElementById('create-city').value,
+                age: parseInt(document.getElementById('create-age').value),
+                gender: document.getElementById('create-gender').value,
+                height: parseFloat(document.getElementById('create-height').value),
+                weight: parseFloat(document.getElementById('create-weight').value)
+            };
+            
+            try {
+                const response = await fetch(`${API_URL}/create`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(patientData)
+                });
+                
+                if (response.ok) {
+                    showAlert('Patient created successfully!', 'success');
+                    document.getElementById('create-form').reset();
+                    loadPatients();
+                } else {
+                    const error = await response.json();
+                    showAlert(error.detail || 'Error creating patient', 'error');
+                }
+            } catch (error) {
+                showAlert('Error: ' + error.message, 'error');
+            }
+        });
+
+        async function loadPatientSelect() {
+            const select = document.getElementById('edit-patient-select');
+            try {
+                const response = await fetch(`${API_URL}/view`);
+                const data = await response.json();
+                
+                select.innerHTML = '<option value="">Choose a patient...</option>';
+                for (const [id, patient] of Object.entries(data)) {
+                    select.innerHTML += `<option value="${id}">${id} - ${patient.name}</option>`;
+                }
+            } catch (error) {
+                showAlert('Error loading patients: ' + error.message, 'error');
+            }
+        }
+
+        async function loadPatientData() {
+            const patientId = document.getElementById('edit-patient-select').value;
+            const form = document.getElementById('edit-form');
+            
+            if (!patientId) {
+                form.style.display = 'none';
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/view/${patientId}`);
+                const patient = await response.json();
+                
+                document.getElementById('edit-name').value = patient.name;
+                document.getElementById('edit-city').value = patient.city;
+                document.getElementById('edit-age').value = patient.age;
+                document.getElementById('edit-gender').value = patient.gender;
+                document.getElementById('edit-height').value = patient.height;
+                document.getElementById('edit-weight').value = patient.weight;
+                
+                form.style.display = 'block';
+            } catch (error) {
+                showAlert('Error loading patient data: ' + error.message, 'error');
+            }
+        }
+
+        document.getElementById('edit-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const patientId = document.getElementById('edit-patient-select').value;
+            const updateData = {};
+            
+            const fields = ['name', 'city', 'age', 'gender', 'height', 'weight'];
+            fields.forEach(field => {
+                const value = document.getElementById(`edit-${field}`).value;
+                if (value) {
+                    updateData[field] = ['age', 'height', 'weight'].includes(field) ? parseFloat(value) : value;
+                }
+            });
+            
+            try {
+                const response = await fetch(`${API_URL}/edit/${patientId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updateData)
+                });
+                
+                if (response.ok) {
+                    showAlert('Patient updated successfully!', 'success');
+                    loadPatients();
+                } else {
+                    const error = await response.json();
+                    showAlert(error.detail || 'Error updating patient', 'error');
+                }
+            } catch (error) {
+                showAlert('Error: ' + error.message, 'error');
+            }
+        });
+
+        async function deletePatient(patientId) {
+            if (!confirm(`Are you sure you want to delete patient ${patientId}?`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/delete/${patientId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    showAlert('Patient deleted successfully!', 'success');
+                    loadPatients();
+                } else {
+                    const error = await response.json();
+                    showAlert(error.detail || 'Error deleting patient', 'error');
+                }
+            } catch (error) {
+                showAlert('Error: ' + error.message, 'error');
+            }
+        }
+
+        function editPatient(patientId) {
+            switchTab('edit');
+            document.querySelector('.tab:nth-child(3)').classList.add('active');
+            document.getElementById('edit-patient-select').value = patientId;
+            loadPatientData();
+        }
+
+        async function sortPatients() {
+            const sortBy = document.getElementById('sort-by').value;
+            const order = document.getElementById('sort-order').value;
+            const container = document.getElementById('sorted-patients');
+            
+            container.innerHTML = '<div class="loading">Sorting patients...</div>';
+            
+            try {
+                const response = await fetch(`${API_URL}/sort?sort_by=${sortBy}&order=${order}`);
+                const patients = await response.json();
+                
+                if (patients.length === 0) {
+                    container.innerHTML = '<div class="empty-state"><h3>No patients found</h3></div>';
+                    return;
+                }
+                
+                container.innerHTML = '';
+                patients.forEach(patient => {
+                    container.innerHTML += createPatientCard(patient.id, patient);
+                });
+            } catch (error) {
+                container.innerHTML = '<div class="empty-state"><h3>Error sorting patients</h3></div>';
+                showAlert('Error: ' + error.message, 'error');
+            }
+        }
+
+        // Load patients on page load
+        loadPatients();
+    </script>
+</body>
+</html>
